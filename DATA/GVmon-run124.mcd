@@ -1,0 +1,54 @@
+REPORT-FILE from 06/21/2009 12:39:54.416 - 12:40:04.511  written 06/21/2009 12:40:06
+REALTIME: 10.094      
+TOTALSUM: 0           
+ROISUM: 0           
+MAXVAL: 0           
+SWEEPS: 0           
+cmline0=06/21/2009 12:39:54.416 - 12:40:04.511 
+range=108000
+prena=0
+mcsmode=1006
+roimin=0
+roimax=1
+rtpreset=10.000      
+evpreset=0           
+swpreset=1           
+ev2preset=0           
+roi2min=0
+roi2max=1
+rampmode=0
+rampstart=1024
+rampstep=1
+rampbin=1
+ramplen=1024
+qdacuse=0
+qdac=2048
+dac1use=0
+dac1val=0
+impsel=6f
+thrstart=4095
+thr1=1716
+thr2=4095
+thrclk=3651
+diguse=808
+digval=0
+cycles=128
+sequences=1
+mempart=0
+dwelltime=3999999
+dwellunit=3
+syncout=909
+histlen=0
+autoinc=1 
+;datname=D:\UCN2009\GVmon-run124.mcd
+savedata=9
+;datname2=D:\UCN2009\main-run124.csv
+savedata2=9
+fmt=da2
+smoothpts=2 
+caluse=0 
+caloff=0.000000
+calfact=0.100000
+calfact2=0
+calfact3=0
+calunit=sec

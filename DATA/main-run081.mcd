@@ -1,0 +1,58 @@
+REPORT-FILE from 06/19/2009 21:50:02.768 - 22:57:13.224  written 06/19/2009 22:57:13
+REALTIME: 4030.456    
+TOTALSUM: 4046        
+ROISUM: 4046        
+MAXVAL: 16          
+SWEEPS: 1           
+range=10800
+prena=0
+mcsmode=46
+roimin=0
+roimax=10800
+rtpreset=10.000      
+evpreset=0           
+swpreset=1           
+ev2preset=0           
+roi2min=0
+roi2max=10800
+rampmode=0
+rampstart=1024
+rampstep=1
+rampbin=1
+ramplen=1024
+qdacuse=0
+qdac=2048
+dac1use=0
+dac1val=0
+impsel=f
+thrstart=1716
+thr1=2866
+thr2=2866
+thrclk=3651
+diguse=808
+digval=0
+cycles=128
+sequences=1
+mempart=0
+dwelltime=39999999
+dwellunit=3
+syncout=909
+histlen=0
+autoinc=1 
+;datname=D:\UCN2009\main-run081.mcd
+savedata=9
+fmt=da2
+smoothpts=2 
+caluse=0 
+caloff=0.000000
+calfact=1.000000
+calfact2=0
+calfact3=0
+calunit=
+roi=2183 3674
+roi=3208 4386
+roi=1350 1936
+roi=1607 2264
+roi=6738 7049
+roi=663 1369
+roi=186 236

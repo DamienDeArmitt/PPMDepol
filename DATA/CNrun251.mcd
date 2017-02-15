@@ -1,0 +1,56 @@
+REPORT-FILE from 07/13/2009 04:19:36.515 - 06:03:13.815  written 07/13/2009 06:03:16
+REALTIME: 6217.290    
+TOTALSUM: 883664      
+ROISUM: 883664      
+MAXVAL: 144         
+SWEEPS: 1           
+cmline0=07/13/2009 04:19:36.515 - 06:03:13.815 
+range=200000
+prena=0
+mcsmode=46
+roimin=0
+roimax=200000
+rtpreset=10.000      
+evpreset=0           
+swpreset=1           
+ev2preset=0           
+roi2min=0
+roi2max=200000
+rampmode=0
+rampstart=1024
+rampstep=1
+rampbin=1
+ramplen=1024
+qdacuse=0
+qdac=2048
+dac1use=0
+dac1val=0
+impsel=7f
+thrstart=2866
+thr1=2866
+thr2=2866
+thrclk=2866
+diguse=808
+digval=0
+cycles=128
+sequences=1
+mempart=0
+dwelltime=3999999
+dwellunit=3
+syncout=909
+histlen=0
+autoinc=1 
+;datname=D:\UCN2009\CNrun251.mcd
+savedata=9
+;datname2=D:\UCN2009\A2run251.csv
+savedata2=9
+fmt=da2
+smoothpts=5 
+caluse=0 
+calch00=1.00
+calvl00=0.000000
+caloff=0.000000
+calfact=0.100000
+calfact2=0
+calfact3=0
+calunit=sec

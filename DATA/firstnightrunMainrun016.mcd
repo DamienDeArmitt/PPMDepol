@@ -1,0 +1,51 @@
+REPORT-FILE from 06/14/2009 09:04:02.384 - 09:19:04.451  written 06/14/2009 09:19:05
+REALTIME: 902.068     
+TOTALSUM: 283681      
+ROISUM: 283681      
+MAXVAL: 525         
+SWEEPS: 1           
+range=43200
+prena=0
+mcsmode=46
+roimin=0
+roimax=43200
+rtpreset=10.000      
+evpreset=0           
+swpreset=1           
+ev2preset=0           
+roi2min=0
+roi2max=43200
+rampmode=0
+rampstart=1024
+rampstep=1
+rampbin=1
+ramplen=1024
+qdacuse=0
+qdac=2048
+dac1use=0
+dac1val=0
+impsel=f
+thrstart=1716
+thr1=2866
+thr2=2866
+thrclk=3651
+diguse=808
+digval=0
+cycles=128
+sequences=1
+mempart=0
+dwelltime=41599999
+dwellunit=3
+syncout=909
+histlen=0
+autoinc=1 
+;datname=D:\PI2009\test\firstnightrunMainrun016.mcd
+savedata=9
+fmt=da2
+smoothpts=2 
+caluse=0 
+caloff=0.000000
+calfact=1.040000
+calfact2=0
+calfact3=0
+calunit=
