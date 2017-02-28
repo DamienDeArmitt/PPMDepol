@@ -1820,8 +1820,9 @@ void guidesep(const char* type, double field) {
   plt11.haxis->GetXaxis()->SetTitle("Hold");
   plt11.haxis->GetYaxis()->SetTitle("unload counts/load counts");
   plt11.haxis->GetXaxis()->SetRangeUser(0,100);
-  plt11.haxis->GetYaxis()->SetRangeUser(0,1);
+  plt11.haxis->GetYaxis()->SetRangeUser(0.0001,1);
   plt11.haxis->Draw();
+  can4->SetLogy();
   plt11.plot->SetMarkerColor(4);
   plt11.plot->SetLineColor(4);
   plt11.plot->SetMarkerStyle(20);
@@ -1857,9 +1858,16 @@ void guidesep(const char* type, double field) {
 void sepselect() {
   char type[100];
   double field;
+  //int numSelect;
+  
   
   printf("\n Type the guide you wish to see:\n\n 1. NON_COAT_CU\n 2. DLC_1\n 3. DLC_PSN_1a\n 4. DLC_PSN_1b\n 5. EP_CU_1\n 6. EP_CU_PSN_1\n 7. DLC_2\n 8. DLC_PSN_2\n 9. SS\n 10. MP_CU\n 11. MP_CU_PSN\n 12. EP_CU_2\n 13. EP_CU_PSN_2\n");
   scanf("%s",type);
+  
+  /*switch(numSelect){
+      
+      
+  }*/
   
   printf("Type the field value you wish to see:\n\n260\n250\n175\n100\n50\n30\n25\n10\n\n");
   scanf("%lf",&field);
@@ -1872,33 +1880,40 @@ void sepselect() {
 }
 
 int dpb(int rnum, int pnum) {
-  //Load the extracted data tree.
-  sprintf(name,"%s/obsvbls.root",ODIR);
-  TTree *tree = xdload(name,"tree1");
-  
+    
+   char name[500];
+   //Load the extracted data tree.
+   sprintf(name,"%s/obsvbls.root",ODIR);
+   TTree *tree = xdload(name,"tree1");
+
    double tautwidle, tauhat, tau1, tau2;
-   double sumclean = 
-   double cumunload =
+   double sumclean = bsnholdcounts; 
+   double sumunload = bsnunldcounts;
    double a = pow(3.14*(3/24), 2);
    double A = pow(3.14*(2.75/2), 2);
    double beta = 45;
    double E = exp(1);
    double delta;
    int rnum, pnum;
+   char name[500];
+   
+    //Load the extracted data tree.
+  sprintf(name,"%s/obsvbls.root",ODIR);
+  TTree *tree = xdload(name,"tree1");
    
    
    
-   printf("\n\nWhat is the Tau for the normal holding interval?");
+   printf("\n\nWhat is the Tautwidle?");
    cin >> tautwidle;
   
-   printf("\n\nWhat is the Tau for the poison holding interval?");
+   printf("\n\nWhat is the Tauhat?");
    cin >> tauhat;
   
-   printf("\n\nWhat is the Tau for the normal unloading interval?");
+   printf("\n\nWhat is the Tau1");
    cin >> tau1;
   
-   printf("\n\nWhat is the Tau for poison unloading interval?");
-   cin >> tau2;
+   //printf("\n\nWhat is the Tau for poison unloading interval?");
+   //cin >> tau2;
   
    delta =  (pow(E,Thold/tauhat - Thold/tautwidle - 
        Tunload/tau1 + Tunload/tau2)*

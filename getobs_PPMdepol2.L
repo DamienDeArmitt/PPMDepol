@@ -74,10 +74,14 @@ double Tloadstart, Tloadend,Tholdstart,Tholdend,Tunldstart,Tunldend;
 int Tloadstartbin,Tloadendbin,Tholdstartbin,Tholdendbin,Tunldstartbin,Tunldendbin;
 double Tbackgroundstart, Tbackgroundend;
 int Tbackgroundstartbin,Tbackgroundendbin;
-double holdfitamp,eholdfitamp,holdfittau,eholdfittau,holdfitbg,eholdfitbg;
-double unldfitamp,eunldfitamp,unldfittau,eunldfittau,unldfitbg,eunldfitbg;
+double Sholdfitamp,eSholdfitamp,Lholdfitamp,eLholdfitamp;
+//double Sholdfittau,eSholdfittau,Lholdfittau, eLholdfittau;
+double Sholdfitbg,eSholdfitbg,Lholdfitbg,eLholdfitbg;
+double unldfitamp,eunldfitamp,unldfitbg,eunldfitbg;
 double bgrate, ebgrate;
 double bsnholdcounts, ebsnholdcounts, bsnunldcounts, ebsnunldcounts;
+double tauhat, etauhat, tautwidle, etautwidle; //tautwidle = short, tauhat = long
+double tau1, etau1, tau2, etau2;
 
 
 void getobs(const char* cmnd, const char* drawop) {
@@ -330,32 +334,58 @@ void getfithold() {
  
   sprintf(name,"smain%d",RNUM);
   TH1F *main = gethist1(name);
- 
+ /*
   sprintf(name,"[0]*exp(-(x-%f)/[1])+[2]",Tloadend);
-  TF1 *fit = new TF1("fit",name,Tloadend,Tholdend);
+  TF1 *Sfit = new TF1("fit",name,Tloadend,Tholdend);
+  
+  Sfit->SetParameter(0,fitmax);
+  Sfit->SetParameter(1,2.65);
+  Sfit->SetParameter(2,1);
+  */
+  sprintf(name,"[0]*exp(-(x-%f)/[1])+[2] + [3]*exp(-(x-%f)/[4])+[5]",Tloadend); // short + long
+  TF1 *Dfit = new TF1("fit",name,Tloadend,Tholdend);
+  
+  Dfit->SetParameter(0,fitmax);
+  Dfit->SetParameter(1,3);
+  Dfit->SetParameter(2,1);
+  Dfit->SetParameter(3,1.5);
+  Dfit->SetParameter(4,14);
+  Dfit->SetParameter(5,1);
  
   fitmax = main->GetBinContent(Tloadendbin);
  
-  fit->SetParameter(0,fitmax);
-  fit->SetParameter(1,2.65);
-  fit->SetParameter(2,1);
- 
-  main->Fit(fit,"LMN","",Tloadend,Tunldstart);
-  fit->Draw("same");
+  //main->Fit(Sfit,"LMN","",Tloadend,Tunldstart);
+  //Sfit->Draw("same");
   
-  holdfitamp = fit->GetParameter(0);
-  eholdfitamp = fit->GetParError(0);
+  main->Fit(Dfit,"LMN","",Tloadend,Tunldstart);
+  Dfit->Draw("same");
+  
+  Sholdfitamp = fit->GetParameter(0);
+  eSholdfitamp = fit->GetParError(0);
  
-  holdfittau = fit->GetParameter(1);
-  eholdfittau = fit->GetParError(1);
+  tautwidle = fit->GetParameter(1);
+  etautwidle = fit->GetParError(1);
  
-  holdfitbg = fit->GetParameter(2);
-  eholdfitbg = fit->GetParError(2);
+  Sholdfitbg = fit->GetParameter(2);
+  eSholdfitbg = fit->GetParError(2);
+  
+  Lholdfitamp = fit->GetParameter(3);
+  eLholdfitamp = fit->GetParError(3);
+ 
+  tauhat = fit->GetParameter(4);
+  etauhat = fit->GetParError(4);
+ 
+  Lholdfitbg = fit->GetParameter(5);
+  eLholdfitbg = fit->GetParError(5);
  
  //reporting
-  printf("Hold interval Fit amplitude value for Run %d: %lf +/- %lf\n\n",RNUM,holdfitamp,eholdfitamp);
-  printf("Hold interval Fit Tau value for Run %d: %lf +/- %lf\n\n",RNUM,holdfittau,eholdfittau);
-  printf("Hold interval Fit Background value for Run %d: %lf +/- %lf\n\n",RNUM,holdfitbg,eholdfitbg);
+  printf("Short Hold interval Fit amplitude value for Run %d: %lf +/- %lf\n\n",RNUM,Sholdfitamp,eSholdfitamp);
+  printf("Tautwidle value for Run %d: %lf +/- %lf\n\n",RNUM,tautwidle,etautwidle);
+  printf("Short Hold interval Fit Background value for Run %d: %lf +/- %lf\n\n",RNUM,Sholdfitbg,eSholdfitbg);
+  
+  printf("Long Hold interval Fit amplitude value for Run %d: %lf +/- %lf\n\n",RNUM,Lholdfitamp,eLholdfitamp);
+  printf("Tauhat value for Run %d: %lf +/- %lf\n\n",RNUM,tauhat,etauhat);
+  printf("Long Hold interval Fit Background value for Run %d: %lf +/- %lf\n\n",RNUM,Lholdfitbg,eLholdfitbg);
   
   return;
 }
@@ -372,7 +402,6 @@ void getfitunld() {
   TF1 *fit = new TF1("fit",name,Tholdend,Tunldend);
  
   fitmax = main->GetBinContent(unldfitstart);
-  printf("AMP FOR THIS RUN IS: %d", fitmax);
  
   fit->SetParameter(0,fitmax);
   fit->SetParameter(1,2.5);
@@ -385,15 +414,18 @@ void getfitunld() {
   unldfitamp = fit->GetParameter(0);
   eunldfitamp = fit->GetParError(0);
  
-  unldfittau = fit->GetParameter(1);
-  eunldfittau = fit->GetParError(1);
+  tau1 = fit->GetParameter(1);
+  etau1 = fit->GetParError(1);
+  
+  tau2 = tau1;
+  etau2 = etau1;
  
   unldfitbg = fit->GetParameter(2);
   eunldfitbg = fit->GetParError(2);
   
   //reporting
   printf("Unload interval Fit amplitude value for Run %d: %lf +/- %lf\n\n",RNUM,unldfitamp,eunldfitamp);
-  printf("Unload interval Fit Tau value for Run %d: %lf +/- %lf\n\n",RNUM,unldfittau,eunldfittau);
+  printf("Tau1 value for Run %d: %lf +/- %lf\n\n",RNUM,tau1,tau2);
   printf("Unload interval Fit Background value for Run %d: %lf +/- %lf\n\n",RNUM,unldfitbg,eunldfitbg);
   
   return; 
@@ -587,18 +619,39 @@ TTree* setuptree(const char* tname) {
   tree->Branch("Tbackgroundend",&Tbackgroundend,"Tbackgroundend/D");
   tree->Branch("Tbackgroundstartbin",&Tbackgroundstartbin,"Tbackgroundstartbin/I");
   tree->Branch("Tbackgroundendbin",&Tbackgroundendbin,"Tbackgroundendbin/I");
-  tree->Branch("holdfitamp",&holdfitamp,"holdfitamp/D");
-  tree->Branch("eholdfitamp",&eholdfitamp,"eholdfitamp/D");
-  tree->Branch("holdfittau",&holdfittau,"holdfittau/D");
-  tree->Branch("eholdfittau",&eholdfittau,"eholdfittau/D");
-  tree->Branch("holdfitbg",&holdfitbg,"holdfitbg/D");
-  tree->Branch("eholdfitbg",&eholdfitbg,"eholdfitbg/D");
+  
+  
+  
+  //long and short amp
+  tree->Branch("Sholdfitamp",&Sholdfitamp,"Sholdfitamp/D");
+  tree->Branch("eSholdfitamp",&Sholdfitamp,"eSholdfitamp/D");
+  tree->Branch("Lholdfitamp",&Lholdfitamp,"Lholdfitamp/D");
+  tree->Branch("eLholdfitamp",&Lholdfitamp,"eLholdfitamp/D");
+  
+  //tautwidle and tahat
+  tree->Branch("tautwidle",&tautwidle,"tautwidle/D");
+  tree->Branch("etautwidle",&etautwidle,"etautwidle/D");
+  tree->Branch("tauhat",&tauhat,"tauhat/D");
+  tree->Branch("etauhat",&etauhat,"etauhat/D");
+
+  tree->Branch("Sholdfitbg",&Sholdfitbg,"Sholdfitbg/D");
+  tree->Branch("eSholdfitbg",&eSholdfitbg,"eSholdfitbg/D");
+  tree->Branch("Lholdfitbg",&Lholdfitbg,"Lholdfitbg/D");
+  tree->Branch("eLholdfitbg",&eLholdfitbg,"eLholdfitbg/D");
+  
+  
+  
   tree->Branch("unldfitamp",&unldfitamp,"unldfitamp/D");
   tree->Branch("eunldfitamp",&eunldfitamp,"eunldfitamp/D");
-  tree->Branch("unldfittau",&unldfittau,"unldfittau/D");
-  tree->Branch("eunldfittau",&eunldfittau,"eunldfittau/D");
+  
+  tree->Branch("tau1",&tau1,"tau1/D");
+  tree->Branch("etau1",&etau1,"etau1/D");
+  tree->Branch("tau2",&tau2,"tau2/D");
+  tree->Branch("etau2",&etau2,"etau2/D");
+  
   tree->Branch("unldfitbg",&unldfitbg,"unldfitbg/D");
   tree->Branch("eunldfitbg",&eunldfitbg,"eunldfitbg/D");
+  
   tree->Branch("bgrate", &bgrate, "bgrate/D");
   tree->Branch("ebgrate", &ebgrate, "ebgrate/D");
   tree->Branch("bsnholdcounts", &bsnholdcounts, "bsnholdcounts/D");
@@ -629,12 +682,23 @@ void initialize() {
   Tunldstartbin = -999;  Tunldendbin = -999;
   Tbackgroundstart = -999;  Tbackgroundend = -999;
   Tbackgroundstartbin = -999;  Tbackgroundendbin = -999;
-  holdfitamp = -999;  eholdfitamp = -999;
-  holdfittau = -999;  eholdfittau = -999;
-  holdfitbg = -999;  eholdfitbg = -999;
+  
+  Sholdfitamp = -999;  eSholdfitamp = -999;
+  Lholdfitamp = -999;  eLholdfitamp = -999;
+  
+  tautwidle = -999;  etautwidle = -999;
+  tauhat = -999;  etauhat = -999;
+  
+  Sholdfitbg = -999;  eSholdfitbg = -999;
+  Lholdfitbg = -999;  eLholdfitbg = -999;
+  
   unldfitamp = -999;  eunldfitamp = -999;
-  unldfittau = -999;  eunldfittau = -999;
+  
+  tau1 = -999;  etau1 = -999;
+  tau2 = -999;  etau2 = -999;
+  
   unldfitbg = -999;  eunldfitbg = -999;
+  
   bgrate = -999; ebgrate = -999;
   bsnholdcounts = -999; ebsnholdcounts = -999;
   bsnunldcounts = -999; ebsnunldcounts = -999;
