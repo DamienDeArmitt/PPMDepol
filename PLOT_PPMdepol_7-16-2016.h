@@ -26,12 +26,27 @@ public:
   double Tloadstart, Tloadend,Tholdstart,Tholdend,Tunldstart,Tunldend;
   double Tbackgroundstart, Tbackgroundend;
   int Tbackgroundstartbin,Tbackgroundendbin;
+  
   //Analysis variables
   double loadcounts,eloadcounts;
   double holdcounts,eholdcounts;
   double unldcounts,eunldcounts;
-  double holdfitamp,eholdfitamp,holdfittau,eholdfittau,holdfitbg,eholdfitbg;
-  double unldfitamp,eunldfitamp,unldfittau,eunldfittau,unldfitbg,eunldfitbg;
+  
+  double holdfitamp, eholdfitamp;
+  double holdfittau, eholdfittau;
+  double unldfitamp,eunldfitamp,unldfitbg,eunldfitbg;
+  double unldfittau, eunldfittau;
+  
+  
+  double holdfitbg, eholdfitbg;
+  
+  double bgrate, ebgrate;
+  double bsnholdcounts, ebsnholdcounts, bsnunldcounts, ebsnunldcounts;
+  double tauhat, etauhat, tautwidle, etautwidle; //tautwidle = short, tauhat = long
+  double tau1, etau1, tau2, etau2;
+  double Tguide;
+
+  
   
   //Plotting range variables
   double xmax;
@@ -63,11 +78,14 @@ void PLOT::get_entry(TTree *tree, int i) {
   //Timing and other run parameters
   tree->SetBranchAddress("rnum",&rnum);
   tree->SetBranchAddress("rtyp",&rtyp);
+  
   tree->SetBranchAddress("Tload",&Tload);
   tree->SetBranchAddress("Thold",&Thold);
   tree->SetBranchAddress("Tunload",&Tunload);
   tree->SetBranchAddress("Tpoison",&Tpoison);
+  
   tree->SetBranchAddress("Tfield",&Tfield);
+  
   tree->SetBranchAddress("Tloadstart",&Tloadstart);
   tree->SetBranchAddress("Tloadend",&Tloadend);
   tree->SetBranchAddress("Tholdstart",&Tholdstart);
@@ -76,14 +94,16 @@ void PLOT::get_entry(TTree *tree, int i) {
   tree->SetBranchAddress("Tunldend",&Tunldend);
   tree->SetBranchAddress("Tbackgroundstart",&Tbackgroundstart);
   tree->SetBranchAddress("Tbackgroundend",&Tbackgroundend);
+  
   tree->SetBranchAddress("Tloadstartbin",&Tloadstartbin);
-  tree->SetBranchAddress("Tloadendbin",&Tloadendbin);
+  tree->SetBranchAddress("Tloadendbin",&Tloadendbin);                       
   tree->SetBranchAddress("Tholdstartbin",&Tholdstartbin);
   tree->SetBranchAddress("Tholdendbin",&Tholdendbin);
   tree->SetBranchAddress("Tunldstartbin",&Tunldstartbin);
   tree->SetBranchAddress("Tunldendbin",&Tunldendbin);
   tree->SetBranchAddress("Tbackgroundstartbin",&Tbackgroundstartbin);
   tree->SetBranchAddress("Tbackgroundendbin",&Tbackgroundendbin);
+  
   //Analysis variables
   tree->SetBranchAddress("loadcounts",&loadcounts);
   tree->SetBranchAddress("eloadcounts",&eloadcounts);
@@ -91,18 +111,32 @@ void PLOT::get_entry(TTree *tree, int i) {
   tree->SetBranchAddress("eholdcounts",&eholdcounts);
   tree->SetBranchAddress("unldcounts",&unldcounts);
   tree->SetBranchAddress("eunldcounts",&eunldcounts);
+  
   tree->SetBranchAddress("holdfitamp",&holdfitamp);
   tree->SetBranchAddress("eholdfitamp",&eholdfitamp);
-  tree->SetBranchAddress("holdfittau",&holdfittau);
-  tree->SetBranchAddress("eholdfittau",&eholdfittau);
+  tree->SetBranchAddress("holdfittau",&holdfitamp);
+  tree->SetBranchAddress("eholdfittau",&eholdfitamp);
   tree->SetBranchAddress("holdfitbg",&holdfitbg);
   tree->SetBranchAddress("eholdfitbg",&eholdfitbg);
+  
   tree->SetBranchAddress("unldfitamp",&unldfitamp);
   tree->SetBranchAddress("eunldfitamp",&eunldfitamp);
-  tree->SetBranchAddress("unldfittau",&unldfittau);
-  tree->SetBranchAddress("eunldfittau",&eunldfittau);
   tree->SetBranchAddress("unldfitbg",&unldfitbg);
   tree->SetBranchAddress("eunldfitbg",&eunldfitbg);
+  tree->SetBranchAddress("tau1",&tau1);
+  tree->SetBranchAddress("etau1",&etau1);
+  tree->SetBranchAddress("tau2",&tau2);
+  tree->SetBranchAddress("etau2",&etau2);
+  
+  tree->SetBranchAddress("bgrate", &bgrate);
+  tree->SetBranchAddress("ebgrate", &ebgrate);
+  tree->SetBranchAddress("bsnholdcounts", &bsnholdcounts);
+  tree->SetBranchAddress("ebsnholdcounts", &ebsnholdcounts);
+  tree->SetBranchAddress("bsnunldcounts", &bsnunldcounts);
+  tree->SetBranchAddress("ebsnunldcounts", &ebsnunldcounts);
+  
+  tree->SetBranchAddress("Tguide", &Tguide);
+  
   
   tree->GetEntry(i);
   

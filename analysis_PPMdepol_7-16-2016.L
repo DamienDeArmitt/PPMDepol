@@ -15,7 +15,7 @@ Changelog:
 
 [DAD]: added holdfittau() to plot hold tau versus run number, color codes for field value and lines seperate guide types
 
-[DAD]: added holdfitbg() and unldfitbg() to plot the backgrounds versus run number, same color coding and guide lines
+[DAD]: added Holdfitbg() and unldfitbg() to plot the backgrounds versus run number, same color coding and guide lines
 
 [DAD]: split runsummary() into seperate functions and will use run summary to select which plots to view along with the load counts.
 
@@ -25,6 +25,7 @@ Changelog:
 */
 
 #include <stdint.h>
+#include <math.h>
 #include "TROOT.h"
 #include "TTree.h"
 #include "TBranch.h"
@@ -38,32 +39,39 @@ Changelog:
 #include "TGraphErrors.h"
 #include "TLegend.h"
 #include "PLOT_PPMdepol_7-16-2016.h"
+#include "getobs_PPMdepol2.L"
+#include "getobs.h"
 
+#define ODIR "/home/damien/Desktop/PPMdepol"
+#define RUMAX 100
 
-#define ODIR "./" //Directory for the observables TTree file.
-#define RUMAX 100 //Maximum number of runs in a run unit.
+int runs[];
 
 //Plots
 void runsummary(); //Plots of various quantities and ratios over the entire set of runs.
-void loadcount(); //Plots of the load counts versus run number
-void holdcount(); //Plots of the normalized hold counts versus run number
-void unldcount(); //plots of normalized unload counts.
-void holdfitamp(); //Plots of the normalized hold amp counts versus run number
-void unldfitamp(); //Plots of the normalized unload amp counts versus run number
-void holdfittau(); //Plots of normalized hold tau counts versus run number
-void unldfittau(); //Plots of normalized unld tau counts versus run number
-void holdfitbg(); //plots of normalized hold background counts versus run number
-void unldfitbg(); //plots of normalized unld background counts versus run number
+void getloadcount(); //Plots of the load counts versus run number
+void getholdcount(); //Plots of the normalized hold counts versus run number
+void getunldcount(); //plots of normalized unload counts.
+void getholdfitamp(); //Plots of the normalized hold amp counts versus run number
+void getunldfitamp(); //Plots of the normalized unload amp counts versus run number
+void getholdfittau(); //Plots of normalized hold tau counts versus run number
+void getunldfittau(); //Plots of normalized unld tau counts versus run number
+void getholdfitbg(); //plots of normalized hold background counts versus run number
+void getunldfitbg(); //plots of normalized unld background counts versus run number
 void holdint(); //plots hold interval versus normalized unload
 void guidesep(); //plots norm unload counts versus hold time seperating by guide and field
-int dpb(int, int); //calcultes depolarization per bounce
+double dpb(int); //calcultes depolarization per bounce
+void plotObs(); //draws a plot of different observables v. run number
+void plotdpb(); // calculates dpb for all runs and plots it by guide type and field strength
+void vlinedraw(double, double, int); 
+double getTauhat(int);// gets tauhat for each guide type
 
 
 //Retrieving extracted observables lemmings
 TTree* xdload(const char*,const char*);
 
 //General lemmings
-void guidelabel(TCanvas*, const char*, double);//makes the labels for the guide types in the plots
+void guidelabel(TCanvas*, const char*,double, double);//makes the labels for the guide types in the plots
 void edivide(double,double,double,double,double*,double*);
 void vlinedraw(double,double,int);
 void wsum(int,double*,double*,double*,double*);
@@ -71,6 +79,7 @@ int RunUnits(const char*,int[]); //Get runs in a run unit for a particular run t
 void useg(const char*,int); //Set off a particular run unit.
 void drawallusegs();
 void sepselect();
+
 
 int _xdtinit = 0; //Global varible to keep from re-initializing the data tree.
 
@@ -94,56 +103,56 @@ void runsummary() {
   cin >> pnum;
   
   if(pnum == 1) {
-     holdcount();
-     loadcount();
+     getholdcount();
+     getloadcount();
     return;
   }
   
   if(pnum == 2) {
-     unldcount();
-     loadcount();
+     getunldcount();
+     getloadcount();
     return;
   }
   
   if(pnum == 3) {
-     holdfitamp();
-     loadcount();
+     getholdfitamp();
+     getloadcount();
     return;
   }
   
   if(pnum == 4) {
-     unldfitamp();
-     loadcount();
+     getunldfitamp();
+     getloadcount();
     return;
   }
   
  if(pnum == 5) {
-     holdfittau();
-     loadcount();
+     getholdfittau();
+     getloadcount();
     return;
   }
   
   if(pnum == 6) {
-     unldfittau();
-     loadcount();
+     getunldfittau();
+     getloadcount();
     return;
   }
   
   if(pnum == 7) {
-     holdfitbg();
-     loadcount();
+     getholdfitbg();
+     getloadcount();
     return;
   }
   
   if(pnum == 8) {
-     unldfitbg();
-     loadcount();
+     getunldfitbg();
+     getloadcount();
     return;
   }
   
   if(pnum == 9) {
      holdint(); 
-     loadcount();
+     getloadcount();
     return;
   }
   
@@ -155,15 +164,16 @@ void runsummary() {
   return;
 }
 
-void loadcount() {
+void getloadcount() {
     int i;
+    
    char name[500];
    double normload,enormload;
    
-
    
   //Load the extracted data tree.
   sprintf(name,"%s/obsvbls.root",ODIR);
+  
   TTree *tree = xdload(name,"tree1");
 
   //Create plot containers.
@@ -277,7 +287,7 @@ void loadcount() {
  return; 
 }
 
-void holdcount() {
+void getholdcount() {
     int i;
    char name[500];
    double normhold,enormhold;
@@ -419,7 +429,7 @@ void holdcount() {
  return; 
 }
 
-void unldcount() {
+void getunldcount() {
   int i;
    char name[500];
    double normunld,enormunld;
@@ -561,7 +571,7 @@ void unldcount() {
   return;
 }
 
-void holdfitamp() {
+void getholdfitamp() {
    int i;
    char name[500];
    double normholdamp,enormholdamp;
@@ -703,7 +713,7 @@ void holdfitamp() {
  return; 
 }
 
-void unldfitamp() {
+void getunldfitamp() {
   int i;
   char name[500];
   double normunldamp,enormunldamp;
@@ -845,7 +855,7 @@ void unldfitamp() {
  return;  
 }
 
-void holdfittau() {
+void getholdfittau() {
   int i;
   char name[500];
   double normholdtau,enormholdtau;
@@ -987,7 +997,7 @@ void holdfittau() {
  return;  
 }
 
-void unldfittau() {
+void getunldfittau() {
   int i;
   char name[500];
   double normunldtau,enormunldtau;
@@ -1129,7 +1139,7 @@ void unldfittau() {
  return;     
 }
 
-void holdfitbg() {
+void getholdfitbg() {
   int i;
    char name[500];
    double normholdbg,enormholdbg;
@@ -1271,7 +1281,7 @@ void holdfitbg() {
  return;   
 }
 
-void unldfitbg() {
+void getunldfitbg() {
  int i;
   char name[500];
   double normunldbg,enormunldbg;
@@ -1781,7 +1791,7 @@ void guidesep(const char* type, double field) {
   double guide;
   
   int runs[RUMAX];
-  guide == RunUnits(type,runs);
+  guide = RunUnits(type,runs);
   
   //Load the extracted data tree.
   sprintf(name,"%s/obsvbls.root",ODIR);
@@ -1879,55 +1889,435 @@ void sepselect() {
   return;
 }
 
-int dpb(int rnum, int pnum) {
+double dpb(int rnum) {
     
-   char name[500];
+   int i; 
+   char name[500];  
+   
+   double sumclean, sumunload;
+   double a = 3.14*.03515625;
+   double A = 3.14*pow((2.75/2), 2);
+   double beta = 45;
+   double E = exp(1);
+   double delta = 20;
+   double Delta;
+   
+    
+   double Thold,Tunload,tautwidle, etautwidle, tauhat, etauhat, tau1, etau1, tau2, etau2;
+   
    //Load the extracted data tree.
    sprintf(name,"%s/obsvbls.root",ODIR);
    TTree *tree = xdload(name,"tree1");
 
-   double tautwidle, tauhat, tau1, tau2;
-   double sumclean = bsnholdcounts; 
-   double sumunload = bsnunldcounts;
-   double a = pow(3.14*(3/24), 2);
-   double A = pow(3.14*(2.75/2), 2);
-   double beta = 45;
-   double E = exp(1);
-   double delta;
-   int rnum, pnum;
+   PLOT xd;
+   int entries = tree->GetEntries();
+   
+   for(i=0 ; i < entries ; i++) {
+     xd.get_entry(tree,i); 
+  
+     if(rnum == xd.rnum) { 
+       Thold = xd.Thold;
+       Tunload = xd.Tunload;
+       sumclean = xd.bsnholdcounts;
+       sumunload = xd.bsnunldcounts;
+       tautwidle = xd.tautwidle;
+       etautwidle = xd.etautwidle;
+       tauhat = xd.tauhat;
+       etauhat = xd.etauhat;
+       tau1 = xd.tau1;
+       etau1 = xd.etau1;
+       tau2 = xd.tau2;
+       etau2 = xd.etau2;
+     }
+   }
+    /*
+    printf("a: %f\n",a);
+    printf("A: %f\n",A);
+    printf("Thold: %f\n",Thold);
+    printf("Tunload: %f\n",Tunload);
+    printf("sumclean: %f\n",sumclean);
+    printf("sumunload: %f\n",sumunload);
+    printf("tautwidle: %lf\n",tautwidle);
+    printf("etautwidle: %lf\n",etautwidle);
+    printf("tauhat: %lf\n",tauhat);
+    printf("etauhat: %lf\n",etauhat);
+    printf("tau1: %lf\n",tau1);
+    printf("etau1: %lf\n",etau1);
+    printf("tau2: %lf\n",tau2);
+    printf("etau2: %lf\n",etau2);
+    */
+    double ntest1 = exp(Thold/tauhat - Thold/tautwidle);
+    double ntest2 = -1 + pow(E,Tunload/tau1);
+    double ntest3 = sumclean*tau1 - a*pow(E,Tunload/tau1);
+    double ntest4 = -1 + pow(E,Thold/tautwidle);
+    double ntest5 = sumunload*tautwidle;
+    
+    double dtest1 = (-1 + pow(E,Tunload/tau2));
+    double dtest2 = sumclean*tau2;
+    double dtest3 = a*(pow(E,Tunload/tau2));
+    double dtest4 = (-1 + pow(E,Thold/tauhat));
+    double dtest5 = sumunload*tauhat;
+    
+    //printf("\n\nntest1: %lf\nntest2: %lf\nntest3: %lf\nntest4: %lf\nntest5: %lf\n",ntest1,ntest2,ntest3,ntest4,ntest5);
+    //printf("dtest1: %lf\ndtest2: %lf\ndtest3: %lf\ndtest4: %lf\ndtest5: %lf\n",dtest1,dtest2,dtest3,dtest4,dtest5);
+    
+    double dT = ntest1*(A*(ntest2)*ntest3*(ntest4)*ntest5);
+    double dB = delta*beta*(-(A*(dtest1)*dtest2)+dtest3*(dtest4)*dtest5);
+    
+    //printf("\n\ndT: ntest1*(A(ntest2)*ntest3*(ntest4)*ntest5) = %lf", dT);
+    //printf("\ndB: delta*beta*(-(A(dtest1)*dtest2)+dtest3(dtest4)dtest5 = %lf)\n\n", dB);
+    
+    Delta = (dT/dB);
+
+  /*
+   Delta =  (pow(E,Thold/tauhat - Thold/tautwidle - Tunload/tau1 + Tunload/tau2)*(A*(-1 + pow(E,Tunload/tau1))*sumclean*tau1 - a*pow(E,Tunload/tau1)*(-1 + pow(E,Thold/tautwidle))*sumunload*tautwidle)) 
+   /
+   (beta*delta*(-(A*(-1 + pow(E,Tunload/tau2))*sumclean*tau2) + a*pow(E,Tunload/tau2)*(-1 + pow(E,Thold/tauhat))*sumunload*tauhat));
+   */
+  
+   if(Delta!=Delta || Delta > 40000 || Delta < -40000){
+       Delta = 0;
+       return Delta;   
+   }
+   
+   //printf("\n\nDelta %d: %f\n\n", rnum,Delta);
+    
+   
+  
+   
+ return Delta; 
+}
+
+void plotObs(){
+   int i; 
    char name[500];
+   int choice;
+   int rnum;
+   double sumclean, sumunload, Thold, Tunload, tautwidle, etautwidle, tauhat, etauhat, tau1, etau1, tau2, etau2;
    
     //Load the extracted data tree.
-  sprintf(name,"%s/obsvbls.root",ODIR);
-  TTree *tree = xdload(name,"tree1");
+   sprintf(name,"%s/obsvbls.root",ODIR);
+   TTree *tree = xdload(name,"tree1");
+
+   PLOT xd;
+   
+   PLOT pltSumclean; pltSumclean.init();
+   PLOT pltSumunload; pltSumunload.init();
+   PLOT pltTautwidle; pltTautwidle.init();
+   PLOT pltTauhat; pltTauhat.init();
+   PLOT pltTau1; pltTau1.init();
+   PLOT pltTau2; pltTau2.init();
    
    
+   int entries = tree->GetEntries();
    
-   printf("\n\nWhat is the Tautwidle?");
-   cin >> tautwidle;
+   for(i=0 ; i < entries ; i++) {
+     xd.get_entry(tree,i); 
   
-   printf("\n\nWhat is the Tauhat?");
-   cin >> tauhat;
-  
-   printf("\n\nWhat is the Tau1");
-   cin >> tau1;
-  
-   //printf("\n\nWhat is the Tau for poison unloading interval?");
-   //cin >> tau2;
-  
-   delta =  (pow(E,Thold/tauhat - Thold/tautwidle - 
-       Tunload/tau1 + Tunload/tau2)*
-     (A*(-1 + pow(E,Tunload/tau1))*sumclean*
-        tau1 - a*pow(E,Tunload/tau1)*
-        (-1 + pow(E,Thold/tautwidle))*
-        sumunload*tautwidle))/
-   (beta*delta*(-(A*
-          (-1 + pow(E,Tunload/tau2))*
-          sumclean*tau2) + 
-       a*pow(E,Tunload/tau2)*
-        (-1 + pow(E,Thold/tauhat))*
-        sumunload*tauhat));
-  
+     if(rnum == xd.rnum) { 
+       Thold = xd.Thold;
+       Tunload = xd.Tunload;
+       sumclean = xd.holdcounts;    //
+       sumunload = xd.unldcounts;   //
+       tautwidle = xd.tautwidle;    //
+       etautwidle = xd.etautwidle;
+       tauhat = xd.tauhat;          //
+       etauhat = xd.etauhat;
+       tau1 = xd.tau1;              //
+       etau1 = xd.etau1;
+       tau2 = xd.tau2;              //
+       etau2 = xd.etau2;
+     }
+     pltSumclean.loadpnt(xd.rnum,0,xd.holdcounts,0);
+     pltSumunload.loadpnt(xd.rnum,0,xd.unldcounts,0);
+     pltTautwidle.loadpnt(xd.rnum,0,xd.tautwidle,0);
+     pltTauhat.loadpnt(xd.rnum,0,xd.tauhat,0);
+     pltTau1.loadpnt(xd.rnum,0,xd.tau1,0);
+     pltTau2.loadpnt(xd.rnum,0,xd.tau2,0);
+   }
    
- return delta; 
+   cout << "\n1.sumclean\n2.sumunload\n3.tautwidle\n4.tauhat\n5.tau1/tau2\nSelect a Observable plot: ";
+   cin >> choice;
+   
+   switch(choice){
+       case 1: //Draw sumclean plot.
+       {
+           TCanvas *canClean = new TCanvas("canClean","Sumclean v. Rnum",735,5,700,500);
+           canClean->SetFrameLineColor(0);
+           canClean->cd();
+           pltSumclean.make("pltSumclean");
+           pltSumclean.haxis->SetTitle("Sumclean v. Run");
+           pltSumclean.haxis->GetXaxis()->SetTitle("run#");
+           pltSumclean.haxis->GetYaxis()->SetTitle("UCN Counts");
+           pltSumclean.haxis->GetXaxis()->SetRangeUser(0,400);
+           pltSumclean.haxis->GetYaxis()->SetRangeUser(0,6000);
+           pltSumclean.haxis->Draw();
+           pltSumclean.plot->SetMarkerColor(4);
+           pltSumclean.plot->SetLineColor(4);
+           pltSumclean.plot->SetMarkerStyle(20);
+           pltSumclean.plot->Draw("PSame");
+           break;
+       }
+       case 2:
+       {
+           TCanvas *canUnload = new TCanvas("canUnload","Sumunload v. Rnum",735,5,700,500);
+           canUnload->SetFrameLineColor(0);
+           canUnload->cd();
+           pltSumunload.make("pltSumunload");
+           pltSumunload.haxis->SetTitle("Sumunld v. Run");
+           pltSumunload.haxis->GetXaxis()->SetTitle("run#");
+           pltSumunload.haxis->GetYaxis()->SetTitle("UCN Counts");
+           pltSumunload.haxis->GetXaxis()->SetRangeUser(0,400);
+           pltSumunload.haxis->GetYaxis()->SetRangeUser(0,6000);
+           pltSumunload.haxis->Draw();
+           pltSumunload.plot->SetMarkerColor(4);
+           pltSumunload.plot->SetLineColor(4);
+           pltSumunload.plot->SetMarkerStyle(20);
+           pltSumunload.plot->Draw("PSame");
+           break;
+       }
+       case 3:
+       {
+           TCanvas *canTautwidle = new TCanvas("canTautwidle","Tautwidle v. Rnum",735,5,700,500);
+           canTautwidle->SetFrameLineColor(0);
+           canTautwidle->cd();
+           pltTautwidle.make("pltTautwidle");
+           pltTautwidle.haxis->SetTitle("Tautwidle v. Run");
+           pltTautwidle.haxis->GetXaxis()->SetTitle("run#");
+           pltTautwidle.haxis->GetYaxis()->SetTitle("Tautwidle value");
+           pltTautwidle.haxis->GetXaxis()->SetRangeUser(0,400);
+           pltTautwidle.haxis->GetYaxis()->SetRangeUser(0,15);
+           pltTautwidle.haxis->Draw();
+           pltTautwidle.plot->SetMarkerColor(4);
+           pltTautwidle.plot->SetLineColor(4);
+           pltTautwidle.plot->SetMarkerStyle(20);
+           pltTautwidle.plot->Draw("PSame");
+           break;
+       }
+       case 4: 
+       {
+           TCanvas *canTauhat = new TCanvas("canTauhat","Tauhat v. Rnum",735,5,700,500);
+           canTauhat->SetFrameLineColor(0);
+           canTauhat->cd();
+           pltTauhat.make("pltTauhat");
+           pltTauhat.haxis->SetTitle("tauhat v. Run");
+           pltTauhat.haxis->GetXaxis()->SetTitle("run#");
+           pltTauhat.haxis->GetYaxis()->SetTitle("Tauhat value");
+           pltTauhat.haxis->GetXaxis()->SetRangeUser(0,400);
+           pltTauhat.haxis->GetYaxis()->SetRangeUser(0,4000);
+           pltTauhat.haxis->Draw();
+           pltTauhat.plot->SetMarkerColor(4);
+           pltTauhat.plot->SetLineColor(4);
+           pltTauhat.plot->SetMarkerStyle(20);
+           pltTauhat.plot->Draw("PSame");
+           break;
+       }
+       case 5:
+       {
+           TCanvas *canTau1 = new TCanvas("canTau1","Tau1/tau2 v. Rnum",735,5,700,500);
+           canTau1->SetFrameLineColor(0);
+           canTau1->cd();
+           pltTau1.make("pltTau1");
+           pltTau1.haxis->SetTitle("tau1/tau2 v. Run");
+           pltTau1.haxis->GetXaxis()->SetTitle("run#");
+           pltTau1.haxis->GetYaxis()->SetTitle("Tau1/tau2 value");
+           pltTau1.haxis->GetXaxis()->SetRangeUser(0,400);
+           pltTau1.haxis->GetYaxis()->SetRangeUser(0,20);
+           pltTau1.haxis->Draw();
+           pltTau1.plot->SetMarkerColor(4);
+           pltTau1.plot->SetLineColor(4);
+           pltTau1.plot->SetMarkerStyle(20);
+           pltTau1.plot->Draw("PSame");
+           break;
+       }
+   }
+    
+    return;
 }
+
+void plotdpb(){
+    int i; 
+    char name[500];
+    double depol;
+    
+    //Load the extracted data tree.
+    sprintf(name,"%s/obsvbls.root",ODIR);
+    TTree *tree = xdload(name,"tree1");
+
+    PLOT xd;
+    
+    int entries = tree->GetEntries();
+    
+    
+    
+    PLOT pltDelta10;  pltDelta10.init();
+    PLOT pltDelta25;  pltDelta25.init();
+    PLOT pltDelta30;  pltDelta30.init();
+    PLOT pltDelta50;  pltDelta50.init();
+    PLOT pltDelta100;  pltDelta100.init();
+    PLOT pltDelta175;  pltDelta175.init();
+    PLOT pltDelta250;  pltDelta250.init();
+    PLOT pltDelta260;  pltDelta260.init();
+    
+    for(i=0 ; i < entries; i++) {
+        xd.get_entry(tree,i);
+        
+        depol = dpb(xd.rnum); 
+        printf("Depol %d: %f\n\n",i,depol); 
+        //pltDelta.loadpnt(i,0,depol,0);
+        
+        if(xd.Tfield == 260) pltDelta260.loadpnt(xd.rnum,0,depol,0);
+        if(xd.Tfield == 250) pltDelta250.loadpnt(xd.rnum,0,depol,0);
+        if(xd.Tfield == 175) pltDelta175.loadpnt(xd.rnum,0,depol,0);
+        if(xd.Tfield == 100) pltDelta100.loadpnt(xd.rnum,0,depol,0);
+        if(xd.Tfield == 50) pltDelta50.loadpnt(xd.rnum,0,depol,0);
+        if(xd.Tfield == 30) pltDelta30.loadpnt(xd.rnum,0,depol,0);
+        if(xd.Tfield == 25) pltDelta25.loadpnt(xd.rnum,0,depol,0);
+        if(xd.Tfield == 10) pltDelta10.loadpnt(xd.rnum,0,depol,0);
+    }
+   
+   TCanvas *canDPB = new TCanvas("canDPB","Depol v. Rnum",735,5,900,700);
+   canDPB->SetFrameLineColor(0);
+   canDPB->cd();
+           
+           pltDelta250.make("pltDelta250");
+           pltDelta250.haxis->SetTitle("Depol v. Run");
+           pltDelta250.haxis->GetXaxis()->SetTitle("run#");
+           pltDelta250.haxis->GetYaxis()->SetTitle("DPB");
+           pltDelta250.haxis->GetXaxis()->SetRangeUser(70,400);
+           pltDelta250.haxis->GetYaxis()->SetRangeUser(-40000,40000);
+           pltDelta250.haxis->Draw();
+           pltDelta250.plot->SetMarkerColor(12);
+           pltDelta250.plot->SetLineColor(4);
+           pltDelta250.plot->SetMarkerStyle(20);
+           pltDelta250.plot->Draw("PSame");
+           
+           pltDelta100.make("pltDelta100");
+           pltDelta100.plot->SetMarkerColor(5);
+           pltDelta100.plot->SetLineColor(4);
+           pltDelta100.plot->SetMarkerStyle(20);
+           pltDelta100.plot->Draw("PSame");
+           
+           pltDelta260.make("pltDelta260");
+           pltDelta260.plot->SetMarkerColor(8);
+           pltDelta260.plot->SetLineColor(4);
+           pltDelta260.plot->SetMarkerStyle(20);
+           pltDelta260.plot->Draw("PSame");
+           
+           pltDelta175.make("pltDelta175");
+           pltDelta175.plot->SetMarkerColor(7);
+           pltDelta175.plot->SetLineColor(4);
+           pltDelta175.plot->SetMarkerStyle(20);
+           pltDelta175.plot->Draw("PSame");
+           
+           pltDelta50.make("pltDelta50");
+           pltDelta50.plot->SetMarkerColor(6);
+           pltDelta50.plot->SetLineColor(4);
+           pltDelta50.plot->SetMarkerStyle(20);
+           pltDelta50.plot->Draw("PSame");
+           
+           pltDelta30.make("pltDelta30");
+           pltDelta30.plot->SetMarkerColor(2);
+           pltDelta30.plot->SetLineColor(4);
+           pltDelta30.plot->SetMarkerStyle(20);
+           pltDelta30.plot->Draw("PSame");
+           
+           pltDelta25.make("pltDelta25");
+           pltDelta25.plot->SetMarkerColor(3);
+           pltDelta25.plot->SetLineColor(4);
+           pltDelta25.plot->SetMarkerStyle(20);
+           pltDelta25.plot->Draw("PSame");
+           
+           pltDelta10.make("pltDelta10");
+           pltDelta10.plot->SetMarkerColor(4);
+           pltDelta10.plot->SetLineColor(4);
+           pltDelta10.plot->SetMarkerStyle(20);
+           pltDelta10.plot->Draw("PSame");
+           
+           TLegend *legdpb = new TLegend(0.769,0.669,0.997,0.996);
+           legdpb->SetFillColor(0);
+           legdpb->AddEntry( pltDelta260.plot,"B = 250 G","LP");
+           legdpb->AddEntry( pltDelta250.plot,"B = 100 G","LP");
+           legdpb->AddEntry( pltDelta175.plot,"B = 260 G", "LP");
+           legdpb->AddEntry( pltDelta100.plot,"B = 175 G", "LP");
+           legdpb->AddEntry( pltDelta50.plot,"B = 50 G", "LP");
+           legdpb->AddEntry( pltDelta30.plot,"B = 30 G", "LP");
+           legdpb->AddEntry( pltDelta25.plot,"B = 25 G", "LP");
+           legdpb->AddEntry( pltDelta10.plot,"B = 10 G", "LP");
+           legdpb->Draw("Same");
+           
+           vlinedraw(70,78,2); //CU
+           vlinedraw(79,103,3);//Non coat Cu
+           vlinedraw(104,198,4);//DLC
+           vlinedraw(199,273,5);//EP Cu
+           vlinedraw(304,338,6);//SS
+           vlinedraw(339,373,7);//MP Cu
+           vlinedraw(374,386,5);//EP Cu
+    return;
+}
+void vlinedraw(double low, double high, int color) {
+  double cutlinelx[2], cutlinehx[2];
+  double cutlinely[2], cutlinehy[2];
+  cutlinely[0]=0;
+  cutlinehy[0]=0;
+  cutlinely[1]=1e10;
+  cutlinehy[1]=1e10;
+  cutlinelx[0] = low;
+  cutlinelx[1] = low;
+  cutlinehx[0] = high;
+  cutlinehx[1] = high;
+  TGraph *glow = new TGraph(2,cutlinelx,cutlinely);
+  TGraph *ghigh = new TGraph(2,cutlinehx,cutlinehy);
+  glow->SetLineColor(color);
+  ghigh->SetLineColor(color);
+  glow->Draw("same");
+  ghigh->Draw("same");
+  
+  return;
+}
+
+double getTauhat(int guide){
+   char name[500];
+   double tauhat = 0;
+   double temp[200];
+   int counter = 0;
+   int i,j,k;
+   double test;
+   
+   for(k = 0;k < 200; k++) temp[i] = 0;
+   
+   
+   //Load the extracted data tree.
+   sprintf(name,"%s/obsvbls.root",ODIR);
+   TTree *tree = xdload(name,"tree1");
+
+   PLOT xd;
+   int entries = tree->GetEntries();
+  
+   for(i = 0; i < entries; i++){
+       xd.get_entry(tree,i);
+            
+       //if((xd.Tguide == guide) && (xd.rtyp == 1)) {
+           test = gettauhat(xd.rnum);
+           
+           printf("tau %f",test);
+       //}
+       
+       
+   }
+    
+   /* for(j = 0; j < 200; j++){
+        if(temp[i] != 0){
+            tauhat = tauhat + temp[i];
+            counter++;
+        }
+            
+    } 
+    
+    tauhat = tauhat/counter;
+    
+    printf("Average Tauhat: %f\n\n", tauhat); */
+    
+   return tauhat;
+}
+
